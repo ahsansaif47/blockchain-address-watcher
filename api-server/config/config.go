@@ -32,7 +32,7 @@ func GetConfig() Config {
 func loadConfig() (Config, error) {
 	err := godotenv.Load(filepath.Join("..", ".env"))
 	return Config{
-		DatabaseURL: os.Getenv("SERVICE_NAME"),
+		DatabaseURL: os.Getenv("DB_URL"),
 		Port:        os.Getenv("PORT"),
 		JWTSecret:   os.Getenv("JWT_SECRET"),
 	}, err
