@@ -20,12 +20,12 @@ var dbOnce sync.Once
 
 func GetDatabaseInstance() *Database {
 	dbOnce.Do(func() {
-		dbInstance = Connect()
+		dbInstance = connect()
 	})
 	return dbInstance
 }
 
-func Connect() *Database {
+func connect() *Database {
 	c := config.GetConfig()
 	ctx := context.Background()
 
