@@ -8,6 +8,10 @@ import (
 )
 
 type IUserInterface interface {
+	CreateNewUser(user sqlc.CreateUserParams) (pgtype.UUID, error)
+	GetUser(email string) (*sqlc.User, error)
+	SoftDeleteUser(id pgtype.UUID) error
+	HardDeleteUser(id pgtype.UUID) error
 }
 
 type UserRepo struct {
@@ -15,7 +19,7 @@ type UserRepo struct {
 	db  *sqlc.Queries
 }
 
-func NewRepository(db sqlc.DBTX) IUserInterface {
+func NewUserRepository(db sqlc.DBTX) IUserInterface {
 	return &UserRepo{
 		db:  sqlc.New(db),
 		ctx: context.Background(),
