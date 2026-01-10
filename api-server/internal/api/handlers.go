@@ -3,16 +3,20 @@ package api
 import (
 	"github.com/ahsansaif47/blockchain-address-watcher/api-server/internal/dto"
 	"github.com/ahsansaif47/blockchain-address-watcher/api-server/internal/service"
+	"github.com/ahsansaif47/blockchain-address-watcher/api-server/utils/validators"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
 type UserHandler struct {
-	service service.IUserService
+	service   service.IUserService
+	validator *validator.Validate
 }
 
-func NewUserHandler(userService service.IUserService) *UserHandler {
+func NewUserHandler(userService service.IUserService, validator *validator.Validate) *UserHandler {
 	return &UserHandler{
-		service: userService,
+		service:   userService,
+		validator: validator,
 	}
 }
 
@@ -37,10 +41,18 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 		})
 	}
 
+	if err := h.validator.Struct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{
+			Error:   "Validation failed",
+			Details: "Please check the fields and try again",
+			Fields:  validators.GetValidationErrors(err),
+		})
+	}
+
 	status, userID, err := h.service.RegisterUser(req)
 	if err != nil {
-		return c.Status(status).JSON(dto.ErrorResponse{
-			Error:   "Failed to create user",
+		c.Status(status).JSON(dto.ErrorResponse{
+			Error:   "Failed to register",
 			Details: err.Error(),
 		})
 	}
@@ -89,41 +101,6 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	return c.Status(status).JSON(dto.LoginResponse{})
 }
 
-// GetUser retrieves a user by email
-// @Summary Get user by email
-// @Description Get user details
-// @Tags users
-// @Produce json
-// @Param email query string true "User email"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /api/users [get]
-func (h *UserHandler) GetUser(c *fiber.Ctx) error {
-	email := c.Query("email")
-	if email == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(dto.ErrorResponse{
-			Error: "Email query parameter is required",
-		})
-	}
-
-	status, user, err := h.service.GetUser(email)
-	if err != nil {
-		return c.Status(status).JSON(dto.ErrorResponse{
-			Error:   "Failed to get user",
-			Details: err.Error(),
-		})
-	}
-
-	return c.Status(status).JSON(dto.SuccessResponse{
-		Message: "User retrieved successfully",
-		Data: map[string]interface{}{
-			"user": user,
-		},
-	})
-}
-
 // DeleteUser handles user deletion (soft or hard)
 // @Summary Delete user
 // @Description Delete a user account (soft or hard delete)
@@ -164,7 +141,7 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(status).JSON(dto.SuccessResponse{
+	return c.Status(status).JSON(dto.DeleteUserResponse{
 		Message: "User deleted successfully",
 	})
 }

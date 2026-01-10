@@ -3,10 +3,10 @@ package dto
 import "time"
 
 type RegisterUserRequest struct {
-	Email         string     `json:"email"`
-	Password      string     `json:"password"`
-	PhoneNo       string     `json:"phone_no"`
-	WalletAddress string     `json:"wallet_address"`
+	Email         string     `json:"email" validate:"required,email,min=5,max=255"`
+	Password      string     `json:"password" validate:"required,strong_password,min=8,max=128"`
+	PhoneNo       string     `json:"phone_no" validate:"required,phone,min=10,max=20"`
+	WalletAddress string     `json:"wallet_address" validate:"required,wallet_address,min=25,max=50"`
 	Subscribed    bool       `json:"subscribed"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
@@ -37,13 +37,17 @@ type UserResponse struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 }
 
-// DeleteUserRequest represents the request body for user deletion
 type DeleteUserRequest struct {
 	UserID string `json:"user_id"`
 	Type   string `json:"type"`
 }
 
+type DeleteUserResponse struct {
+	Message string `json:"message"`
+}
+
 type ErrorResponse struct {
-	Error   string `json:"error"`
-	Details string `json:"details,omitempty"`
+	Error   string            `json:"error"`
+	Details string            `json:"details,omitempty"`
+	Fields  map[string]string `json:"fields,omitempty"`
 }
