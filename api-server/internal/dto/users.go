@@ -6,7 +6,7 @@ type RegisterUserRequest struct {
 	Email         string     `json:"email" validate:"required,email,min=5,max=255"`
 	Password      string     `json:"password" validate:"required,strong_password,min=8,max=128"`
 	PhoneNo       string     `json:"phone_no" validate:"required,phone,min=10,max=20"`
-	WalletAddress string     `json:"wallet_address" validate:"required,wallet_address,min=25,max=50"`
+	WalletAddress string     `json:"wallet_address"`
 	Subscribed    bool       `json:"subscribed"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`

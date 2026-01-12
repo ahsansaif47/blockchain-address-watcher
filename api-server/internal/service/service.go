@@ -10,7 +10,6 @@ import (
 	"github.com/ahsansaif47/blockchain-address-watcher/api-server/utils/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type IUserService interface {
@@ -33,10 +32,6 @@ func NewService(repo postgres.IUserInterface) IUserService {
 func (s *UserService) RegisterUser(user dto.RegisterUserRequest) (int, string, error) {
 
 	uuid := uuid.New()
-	pgUUID := pgtype.UUID{}
-	if err := pgUUID.Scan(uuid); err != nil {
-		return fiber.StatusBadRequest, "", err
-	}
 
 	passHash, err := utils.HashPassword(user.Password)
 	if err != nil {
@@ -44,7 +39,7 @@ func (s *UserService) RegisterUser(user dto.RegisterUserRequest) (int, string, e
 	}
 
 	usr := sqlc.CreateUserParams{
-		ID:            pgUUID,
+		ID:            uuid,
 		Email:         user.Email,
 		PasswordHash:  passHash,
 		PhoneNumber:   utils.ToPgText(&user.PhoneNo),
@@ -57,8 +52,7 @@ func (s *UserService) RegisterUser(user dto.RegisterUserRequest) (int, string, e
 		return fiber.StatusInternalServerError, "", err
 	}
 
-	userID, err := utils.PgUUIDToUUID(id)
-	return fiber.StatusCreated, userID, nil
+	return fiber.StatusCreated, id.String(), nil
 }
 
 func (s *UserService) Login(req dto.LoginRequest) (int, *dto.LoginResponse, error) {
@@ -85,12 +79,13 @@ func (s *UserService) Login(req dto.LoginRequest) (int, *dto.LoginResponse, erro
 }
 
 func (s *UserService) SoftDeleteUser(id string) (int, error) {
-	pgUUID := pgtype.UUID{}
-	if err := pgUUID.Scan(id); err != nil {
+
+	uuid, err := utils.StringToUUID(id)
+	if err != nil {
 		return fiber.StatusBadRequest, err
 	}
 
-	if err := s.repo.SoftDeleteUser(pgUUID); err != nil {
+	if err := s.repo.SoftDeleteUser(*uuid); err != nil {
 		return fiber.StatusInternalServerError, err
 	}
 
@@ -98,12 +93,12 @@ func (s *UserService) SoftDeleteUser(id string) (int, error) {
 }
 
 func (s *UserService) HardDeleteUser(id string) (int, error) {
-	pgUUID := pgtype.UUID{}
-	if err := pgUUID.Scan(id); err != nil {
+	uuid, err := utils.StringToUUID(id)
+	if err != nil {
 		return fiber.StatusBadRequest, err
 	}
 
-	if err := s.repo.HardDeleteUser(pgUUID); err != nil {
+	if err := s.repo.HardDeleteUser(*uuid); err != nil {
 		return fiber.StatusInternalServerError, err
 	}
 

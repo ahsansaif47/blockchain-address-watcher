@@ -84,7 +84,7 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 
 	// Service layer handles authentication logic
 	// TODO: Implement password verification and JWT token generation in service layer
-	status, user, err := h.service.Login(req)
+	status, res, err := h.service.Login(req)
 	if err != nil {
 		return c.Status(status).JSON(dto.ErrorResponse{
 			Error:   "Failed to authenticate",
@@ -92,13 +92,13 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	if user == nil {
+	if res == nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(dto.ErrorResponse{
 			Error: "Invalid credentials",
 		})
 	}
 
-	return c.Status(status).JSON(dto.LoginResponse{})
+	return c.Status(status).JSON(res)
 }
 
 // DeleteUser handles user deletion (soft or hard)

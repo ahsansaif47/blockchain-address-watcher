@@ -23,29 +23,32 @@ func main() {
 		// ErrorHandler:          customErrorHandler,
 	})
 
-	// Middleware
-	app.Use(recover.New()) // Recover from panics
-	app.Use(logger.New())  // Request logging
-	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "*",
-		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
-		AllowHeaders:     "Origin,Content-Type,Accept,Authorization",
-		AllowCredentials: true,
+	// App-Level Middleware
+	app.Use(recover.New())
+	app.Use(logger.New(logger.Config{
+		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
 	}))
+	app.Use(cors.New(
+		cors.Config{
+			AllowOrigins: "*",
+			AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+			AllowHeaders: "Origin,Content-Type,Accept,Authorization",
+		},
+	))
 
 	// Initialize database
 	// TODO: This needs to be fixed - currently creating both connection and pool
 	// The repository should use the pool, but NewUserRepository receives nil
-	postgres.GetDatabaseInstance()
+	db := postgres.GetDatabaseInstance()
 	log.Printf("Database connected successfully")
 
 	// Setup routes
-	api.SetupRoutes(app)
+	api.SetupRoutes(app, db)
 
 	// Start server
 	port := cfg.Port
 	if port == "" {
-		port = "3000"
+		port = "7000"
 	}
 
 	log.Printf("Server starting on port %s", port)

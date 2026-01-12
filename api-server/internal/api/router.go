@@ -8,9 +8,9 @@ import (
 )
 
 // SetupRoutes configures all API routes
-func SetupRoutes(app *fiber.App) {
+func SetupRoutes(app *fiber.App, db *postgres.Database) {
 	// Initialize repository
-	userRepo := postgres.NewUserRepository(nil) // TODO: Pass actual database connection
+	userRepo := postgres.NewUserRepository(db.Pool)
 
 	// Initialize service
 	userService := service.NewService(userRepo)
@@ -30,11 +30,14 @@ func SetupRoutes(app *fiber.App) {
 		// Public routes
 		users.Post("/register", userHandler.Register)
 		users.Post("/login", userHandler.Login)
-
-		// Protected routes (TODO: Add authentication middleware)
-		users.Get("/", userHandler.Login)
 		users.Delete("/delete", userHandler.DeleteUser)
 	}
+
+	// subscription := api.Group("/subscriptions", jwt.JWTMiddleware())
+	// {
+	// 	subscription.Patch("/user/:id/subscribe")
+	// 	subscription.Patch("/user/:id/subscribe")
+	// }
 
 	// Health check endpoint
 	app.Get("/health", func(c *fiber.Ctx) error {

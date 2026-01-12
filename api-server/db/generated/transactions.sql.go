@@ -8,6 +8,7 @@ package sqlcgenerated
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -29,7 +30,7 @@ RETURNING
 `
 
 type CreateUserParams struct {
-	ID            pgtype.UUID
+	ID            uuid.UUID
 	Email         string
 	PasswordHash  string
 	PhoneNumber   pgtype.Text
@@ -37,7 +38,7 @@ type CreateUserParams struct {
 	Subscribed    bool
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (pgtype.UUID, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (uuid.UUID, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.ID,
 		arg.Email,
@@ -46,7 +47,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (pgtype.
 		arg.WalletAddress,
 		arg.Subscribed,
 	)
-	var id pgtype.UUID
+	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
 }
@@ -56,7 +57,7 @@ DELETE FROM users
 WHERE id = $1
 `
 
-func (q *Queries) HardDeleteUser(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) HardDeleteUser(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, hardDeleteUser, id)
 	return err
 }
@@ -99,7 +100,7 @@ SET deleted_at = NOW()
 WHERE id = $1 AND deleted_at IS NULL
 `
 
-func (q *Queries) SoftDeleteUser(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) SoftDeleteUser(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, softDeleteUser, id)
 	return err
 }

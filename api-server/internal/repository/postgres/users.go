@@ -4,14 +4,14 @@ import (
 	"context"
 
 	sqlc "github.com/ahsansaif47/blockchain-address-watcher/api-server/db/generated"
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 type IUserInterface interface {
-	CreateNewUser(user sqlc.CreateUserParams) (pgtype.UUID, error)
+	CreateNewUser(user sqlc.CreateUserParams) (uuid.UUID, error)
 	GetUser(email string) (*sqlc.User, error)
-	SoftDeleteUser(id pgtype.UUID) error
-	HardDeleteUser(id pgtype.UUID) error
+	SoftDeleteUser(id uuid.UUID) error
+	HardDeleteUser(id uuid.UUID) error
 }
 
 type UserRepo struct {
@@ -26,10 +26,10 @@ func NewUserRepository(db sqlc.DBTX) IUserInterface {
 	}
 }
 
-func (r *UserRepo) CreateNewUser(user sqlc.CreateUserParams) (pgtype.UUID, error) {
+func (r *UserRepo) CreateNewUser(user sqlc.CreateUserParams) (uuid.UUID, error) {
 	id, err := r.db.CreateUser(r.ctx, user)
 	if err != nil {
-		return pgtype.UUID{}, err
+		return uuid.UUID{}, err
 	}
 
 	return id, err
@@ -44,10 +44,10 @@ func (r *UserRepo) GetUser(email string) (*sqlc.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepo) SoftDeleteUser(id pgtype.UUID) error {
+func (r *UserRepo) SoftDeleteUser(id uuid.UUID) error {
 	return r.db.SoftDeleteUser(r.ctx, id)
 }
 
-func (r *UserRepo) HardDeleteUser(id pgtype.UUID) error {
+func (r *UserRepo) HardDeleteUser(id uuid.UUID) error {
 	return r.db.HardDeleteUser(r.ctx, id)
 }
