@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/ahsansaif47/blockchain-address-watcher/engine/consumer"
@@ -9,7 +10,7 @@ import (
 )
 
 func ConsumerConfig() (*consumer.Config, error) {
-	if err := godotenv.Load("..", ".env"); err != nil {
+	if err := godotenv.Load(filepath.Join("..", ".env")); err != nil {
 		return nil, err
 	}
 
